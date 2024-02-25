@@ -1,6 +1,6 @@
 import ssl
-import pandas as pd
 import requests
+import pandas as pd
 import streamlit as st
 from urllib import request
 from bs4 import BeautifulSoup
@@ -19,10 +19,9 @@ def CrawlAmazon(amazon):
             'Accept-Language': 'en-US, en;q=0.5'})
     
     web = requests.get(amazon, headers= header)
-    print(amazon)
-    print(web)
+    # print(amazon)
+    # print(web)
     soup =  BeautifulSoup(web.content, 'lxml')
-
 
     names = []
     prices = []
@@ -32,10 +31,7 @@ def CrawlAmazon(amazon):
 
     blockcontent = soup.find_all("div", class_="a-section a-spacing-base")
     if blockcontent:
-        # print("true")
         for block in blockcontent:
-            # # Check if the parent has the correct class
-            # if "a-section" in block.parent.get("class", []):
                 namecontent = block.find("span", class_="a-size-base-plus a-color-base a-text-normal")
                 if namecontent:
                     names.append(namecontent.text)
@@ -71,9 +67,7 @@ def CrawlAmazon(amazon):
     else:
         blockcontent = soup.find_all("div", class_="a-section")
         if blockcontent:
-            # print("true2")
             for block in blockcontent:
-                # print("l1")
                 namecontent = block.find("span", class_="a-size-base-plus a-color-base a-text-normal")
                 if namecontent:
                     names.append(namecontent.text)
@@ -105,8 +99,6 @@ def CrawlAmazon(amazon):
                         estTime.append(timecontent.string)
                     else:
                         estTime.append('NA')
-                    # print("l2")
-
 
     min_length = min(len(names), len(prices), len(ratings), len(estTime), len(links))
     names = names[:min_length]
@@ -121,17 +113,17 @@ def CrawlAmazon(amazon):
                         'Ratings' : ratings,
                         'Time' : estTime,
                         'Link' : links})
+    
     # print(df)
     if df.empty:
         CrawlAmazon(amazon)
     writeToExcel(df)
-    print("Data found from Amazon")
+    # print("Data found from Amazon")
     
 def crawlFlipkart(flipkart):   
    
-    flag = 0
     web = requests.get(flipkart)
-    print(flipkart)
+    # print(flipkart)
     # print(web)
     soup =  BeautifulSoup(web.content,"html.parser")
 
@@ -140,7 +132,7 @@ def crawlFlipkart(flipkart):
     ratings = []
     estTime = []
     links = []
-    var = 0
+
     blockContent = soup.find_all("div", class_="_2kHMtA")
     if(blockContent):
         for block in blockContent:
@@ -173,12 +165,10 @@ def crawlFlipkart(flipkart):
                     else:
                         prices.append('NA')
 
-                 
                     tempvar = links[len(links) - 1]
                     if(tempvar != "NA"):
                         tempweb = requests.get(tempvar)
                         tempsoup = BeautifulSoup(tempweb.content, "lxml")
-                        # time = tempsoup.find("span", class_="_1TPvTK")
                         timecontent = tempsoup.find("span", class_="_1TPvTK")
                         if timecontent:
                             estTime.append(timecontent.text)
@@ -217,19 +207,16 @@ def crawlFlipkart(flipkart):
                         else:
                             prices.append('NA')
 
-                    
                         tempvar = links[len(links) - 1]
                         if(tempvar != "NA"):
                             tempweb = requests.get(tempvar)
                             tempsoup = BeautifulSoup(tempweb.content, "lxml")
-                            # time = tempsoup.find("span", class_="_1TPvTK")
                             timecontent = tempsoup.find("span", class_="_1TPvTK")
                             if timecontent:
                                 estTime.append(timecontent.text)
                             else:
                                 estTime.append('NA')
 
-    # print(len(names), len(prices), len(estTime), len(links), len(ratings))
     min_length = min(len(names), len(prices), len(ratings), len(estTime), len(links))
     names = names[:min_length]
     prices = prices[:min_length]
@@ -243,9 +230,10 @@ def crawlFlipkart(flipkart):
                         'Ratings' : ratings,
                         'Time' : estTime,
                         'Link' : links})
+    
     # print(df)
     writeToExcel(df)
-    print("Data found from Flipkart")
+    # print("Data found from Flipkart")
 
 def crawlSnapdeal(snapdeal): 
 
@@ -254,9 +242,8 @@ def crawlSnapdeal(snapdeal):
             'Accept-Language': 'en-US, en;q=0.5'})
     
     web = requests.get(snapdeal, headers= header)
-    print(snapdeal)
+    # print(snapdeal)
     soup =  BeautifulSoup(web.content, 'lxml')
-    
 
     names = []
     prices = []
@@ -295,13 +282,8 @@ def crawlSnapdeal(snapdeal):
             else:
                 estTime.append("NA")
 
-            # print(href)
             links.append(href)
     
-
-    # for i,j,k,l,m in zip(names, prices, ratings,EstimatedTime,Links):
-    #     print(i,j,k,l,m)
-
     min_length = min(len(names), len(prices), len(ratings), len(estTime),len(links))
     names = names[:min_length]
     prices = prices[:min_length]
@@ -316,20 +298,20 @@ def crawlSnapdeal(snapdeal):
                         'Time' : estTime,
                         'Link' : links,
                         })
+    
     # print(df)
     writeToExcel(df)
-    print("Data found from Snapdeal")
+    # print("Data found from Snapdeal")
 
 def crawlAlibaba(Alibaba):   
+
     header = ({'User-Agent':
             'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36',
             'Accept-Language': 'en-US, en;q=0.5'})
-    
    
     web = requests.get(Alibaba, headers= header)
-    print(Alibaba)
+    # print(Alibaba)
     soup =  BeautifulSoup(web.content,"html.parser")
-
 
     names = []
     prices = []
@@ -349,11 +331,8 @@ def crawlAlibaba(Alibaba):
             else:
                 links.append('NA')
 
-            
             ratingContent = block.find("div", class_="product-review-score")
-            # # Check if the parent has the correct class
-            # if "a-section" in block.parent.get("class", []):
-            # print(specificLink)
+
             if(specificLink):
                 tempweb = requests.get(specificLink)
                 tempsoup = BeautifulSoup(tempweb.content, "lxml")
@@ -361,13 +340,11 @@ def crawlAlibaba(Alibaba):
                 namecontent = tempsoup.find("div", class_="product-title-container")
                 if namecontent:
                     names.append(namecontent.text)
-
                    
                     if ratingContent:
                         ratings.append(ratingContent.text)
                     else:
                         ratings.append('NA')
-
 
                     pricecontent = tempsoup.find("div", class_="price")
                     if pricecontent:
@@ -377,14 +354,8 @@ def crawlAlibaba(Alibaba):
                     
                     estTime.append("NA")
                     links.append(specificLink)
-        
-                            
-                    
-    # for i,j,k,l,m,n in zip(names, prices, ratings,EstimatedTimeList, EstimatedFastestDelivery,Links):
-        # print(i,j,k,l,m,n)
 
     min_length = min(len(names), len(prices), len(ratings), len(estTime), len(links))
-
     names = names[:min_length]
     prices = prices[:min_length]
     ratings = ratings[:min_length]
@@ -397,9 +368,10 @@ def crawlAlibaba(Alibaba):
                         'Ratings' : ratings,
                         'Time' : estTime,
                         'Link' : links})
+    
     # print(df)
     writeToExcel(df)
-    print("Data found from Alibaba")
+    # print("Data found from Alibaba")
     
 def urlFormation(product, specsList):
     
@@ -421,7 +393,6 @@ def urlFormation(product, specsList):
         alibaba += '+' + i
         flipkart += '+' + i
 
-
     CrawlAmazon(amazon)
     crawlFlipkart(flipkart)
     crawlSnapdeal(snapdeal)
@@ -442,8 +413,3 @@ def input():
         urlFormation(product, specsList)
    
 input()
-
-
-
-# print(product)
-# print(specsList)
