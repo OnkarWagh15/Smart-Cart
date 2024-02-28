@@ -20,7 +20,7 @@ def CrawlAmazon(amazon):
     
     web = requests.get(amazon, headers= header)
     # print(amazon)
-    # print(web)
+    print(web)
     soup =  BeautifulSoup(web.content, 'lxml')
 
     names = []
@@ -118,13 +118,13 @@ def CrawlAmazon(amazon):
     if df.empty:
         CrawlAmazon(amazon)
     writeToExcel(df)
-    # print("Data found from Amazon")
+    print("Data found from Amazon")
     
 def crawlFlipkart(flipkart):   
    
     web = requests.get(flipkart)
-    # print(flipkart)
-    # print(web)
+    print(flipkart)
+    print(web)
     soup =  BeautifulSoup(web.content,"html.parser")
 
     names = []
@@ -233,7 +233,7 @@ def crawlFlipkart(flipkart):
     
     # print(df)
     writeToExcel(df)
-    # print("Data found from Flipkart")
+    print("Data found from Flipkart")
 
 def crawlSnapdeal(snapdeal): 
 
@@ -242,7 +242,7 @@ def crawlSnapdeal(snapdeal):
             'Accept-Language': 'en-US, en;q=0.5'})
     
     web = requests.get(snapdeal, headers= header)
-    # print(snapdeal)
+    print(snapdeal)
     soup =  BeautifulSoup(web.content, 'lxml')
 
     names = []
@@ -301,7 +301,7 @@ def crawlSnapdeal(snapdeal):
     
     # print(df)
     writeToExcel(df)
-    # print("Data found from Snapdeal")
+    print("Data found from Snapdeal")
 
 def crawlAlibaba(Alibaba):   
 
@@ -371,7 +371,7 @@ def crawlAlibaba(Alibaba):
     
     # print(df)
     writeToExcel(df)
-    # print("Data found from Alibaba")
+    print("Data found from Alibaba")
     
 def urlFormation(product, specsList):
     
@@ -399,7 +399,7 @@ def urlFormation(product, specsList):
     alibaba = alibaba + "+india.html"
     crawlAlibaba(alibaba)
 
-def input():
+def crawling():
     product = st.text_input("Enter Product")
     product = product.replace(" ","+")
 
@@ -412,4 +412,9 @@ def input():
     if st.button("Search", type = "primary"):
         urlFormation(product, specsList)
    
-input()
+def analysis():
+    
+
+crawling()
+analysis()
+
