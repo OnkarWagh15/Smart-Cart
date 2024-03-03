@@ -412,9 +412,6 @@ def crawling():
     if st.button("Search", type = "primary"):
         urlFormation(product, specsList)
    
-def analysis():
     
-
 crawling()
-analysis()
 
