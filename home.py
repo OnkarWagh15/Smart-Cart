@@ -4,8 +4,19 @@ import pandas as pd
 import streamlit as st
 from urllib import request
 from bs4 import BeautifulSoup
+import pandas as pd
+import numpy as np
+
+st.set_page_config(
+    page_title="Smart Cart | All at One Place",
+    page_icon="🛒",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
 
 dfPrimary = pd.DataFrame()
+specsList = []
 
 def writeToExcel(df):
     global dfPrimary  
@@ -108,6 +119,7 @@ def CrawlAmazon(amazon):
     links = links[:min_length]
 
     df = pd.DataFrame({
+                        'Website' : 'Amazon',
                         'Name': names,
                         'Price' : prices,
                         'Ratings' : ratings,
@@ -225,6 +237,7 @@ def crawlFlipkart(flipkart):
     links = links[:min_length]
 
     df = pd.DataFrame({
+                        'Website' : 'Flipkart',
                         'Name': names,
                         'Price' : prices,
                         'Ratings' : ratings,
@@ -291,7 +304,7 @@ def crawlSnapdeal(snapdeal):
     estTime = estTime[:min_length]
     links = links[:min_length]
     df = pd.DataFrame({
-                
+                        'Website' : 'Snapdeal',                
                         'Name': names,
                         'Price' : prices,
                         'Ratings' : ratings,
@@ -310,7 +323,7 @@ def crawlAlibaba(Alibaba):
             'Accept-Language': 'en-US, en;q=0.5'})
    
     web = requests.get(Alibaba, headers= header)
-    # print(Alibaba)
+    print(Alibaba)
     soup =  BeautifulSoup(web.content,"html.parser")
 
     names = []
@@ -362,7 +375,7 @@ def crawlAlibaba(Alibaba):
     estTime = estTime[:min_length]
     links = links[:min_length]
     df = pd.DataFrame({
-                       
+                        'Website' : 'Alibaba',
                         'Name': names,
                         'Price' : prices,
                         'Ratings' : ratings,
@@ -399,22 +412,97 @@ def urlFormation(product, specsList):
     alibaba = alibaba + "+india.html"
     crawlAlibaba(alibaba)
 
+    # return amazon
+
 def crawling():
     product = st.text_input("Enter Product")
     product = product.replace(" ","+")
 
-    specs = st.text_input("Enter specifications : ( colon separated ) ")
+    specs = st.text_input("Enter specifications : ( semicolon separated ) ")
 
-    specsList = []
+    global specsList
     specs = specs.replace(": ", "" ).replace(" ", "+").replace("\t", "+").replace("\n", "+")
     specsList = specs.split(";")
-    
+
     if st.button("Search", type = "primary"):
         urlFormation(product, specsList)
-   
+        print_analysis_to_screen()
+
+
+
+def dollar_to_ruppee(dollar):
+    url = 'https://open.er-api.com/v6/latest/USD'
+
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        data = response.json()
+        
+        # Get the current value of 1 USD in terms of Indian Rupees (INR)
+        usd_to_inr = data['rates']['INR']
+        ruppee = round(dollar * usd_to_inr, 1)
+        return ruppee
+    else:
+        print("Failed to retrieve data from the API.")
+        return
+
+def clean_price(price):
+    price = str(price).replace(',', '')
+    if price.startswith('US$') and price.endswith('/piece'):
+        dollar_price = float(price[3:-6])
+        return dollar_to_ruppee(dollar_price)
+    else:
+        return price
+
 def analysis():
-    
+    df = dfPrimary
+
+    global specsList
+    specsList = [spec.replace('+', ' ') for spec in specsList]
+
+    # Data Cleaning and Preprocessing
+    df = df.dropna(subset=['Price'])
+    df.loc[:, 'Price'] = df['Price'].apply(clean_price)
+    df.loc[:, 'Ratings'] = pd.to_numeric(df['Ratings'], errors = 'coerce')
+    df = df.dropna(subset=['Ratings'])
+    df.loc[:, 'Price'] = pd.to_numeric(df['Price'] , errors = 'coerce')
+    df = df.dropna(subset=['Price'])
+
+    df['Price'] = df['Price'].astype(np.float64)
+
+    # Convert search terms to lowercase for case-insensitive matching
+    specs_lower = [spec.lower() for spec in specsList]
+    df['_lowercase_name'] = df['Name'].str.lower()
+
+    # Filter rows based on specsList (case-insensitive)
+    mask = df['_lowercase_name'].apply(lambda x: any(word in x for spec in specs_lower for word in spec.split()))
+    df = df[mask]  # Keep only the rows that match the specsList
+
+    df.drop('_lowercase_name', axis=1, inplace=True)
+
+    total_records = df.Name.count()
+    quartile = round((75/100)* total_records)
+
+    df_sorted = df.sort_values(by=['Price', 'Ratings', 'Time'], ascending=[True, False, True])
+
+    return df_sorted[:quartile]
+
+def print_analysis_to_screen():
+    if specsList:  # Check if specsList is not empty
+        df = analysis()
+        st.title('Best Products')
+
+        df['Ratings'] = df['Ratings'].apply(lambda x: '⭐' * int(x))
+        df['Price'] = '₹ ' + df['Price'].astype(str)
+
+        st.dataframe(
+            df,
+            column_config={
+                "Name": "Product Name",
+                "Link": st.column_config.LinkColumn("Product URL")
+            },
+            height = 375,
+            hide_index=True,
+        )
 
 crawling()
-analysis()
-
