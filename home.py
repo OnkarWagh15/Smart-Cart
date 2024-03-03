@@ -310,7 +310,7 @@ def crawlAlibaba(Alibaba):
             'Accept-Language': 'en-US, en;q=0.5'})
    
     web = requests.get(Alibaba, headers= header)
-    # print(Alibaba)
+    print(Alibaba)
     soup =  BeautifulSoup(web.content,"html.parser")
 
     names = []
@@ -412,9 +412,9 @@ def crawling():
     if st.button("Search", type = "primary"):
         urlFormation(product, specsList)
    
-def analysis():
+# def analysis():
     
 
 crawling()
-analysis()
+# analysis()
 
