@@ -415,18 +415,96 @@ def urlFormation(product, specsList):
     # return amazon
 
 def crawling():
-    product = st.text_input("Enter Product")
-    product = product.replace(" ","+")
+    st.markdown("<h1 style='font-size: 7em; text-align: center; color:lightblue'>SMART CART</h1>", unsafe_allow_html=True)
+    container_style = """
+    border-radius: 3px;
+    padding: 1px;
+    background-color: beige;
+    box-shadow: 2px 2px 5px grey;
+    height : 8px
+    """
+    st.markdown(
+        f"""
+        <div style="{container_style}">
+            <h1 style=' font-size : 1em; text-align: center;color: black;'></h1>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    for _ in range(7):
+        st.write("")
+    
+    col1, col2, col3 = st.columns(3)
+    with col2:
+        st.markdown("<h5 style='font-size:1.5em; text-align: center; color:lightblue'>ENTER PRODUCT DETAILS:</h5>", unsafe_allow_html=True)
+        # st.write("ENTER PRODUCT DETAILS:")
+        product = st.text_input("Enter Product")
+        product = product.replace(" ","+")
 
-    specs = st.text_input("Enter specifications : ( semicolon separated ) ")
+        specs = st.text_input("Enter specifications : ( colon separated ) ")
 
-    global specsList
-    specs = specs.replace(": ", "" ).replace(" ", "+").replace("\t", "+").replace("\n", "+")
-    specsList = specs.split(";")
+        global specsList
+        specs = specs.replace(": ", "" ).replace(" ", "+").replace("\t", "+").replace("\n", "+")
+        specsList = specs.split(";")
 
-    if st.button("Search", type = "primary"):
-        urlFormation(product, specsList)
-        print_analysis_to_screen()
+        if st.button("Search", type = "primary"):
+            urlFormation(product, specsList)
+            print_analysis_to_screen()
+
+    # col1, col2, col3 = st.columns(3)
+    # with col1:
+    #     container_style = """
+    #     border-radius: 3px;
+    #     padding: 10px;
+    #     background-color: beige;
+    #     box-shadow: 2px 2px 5px grey;
+    #     height: 400px;
+    #     width: 500px;
+    #     """
+    #     st.markdown(
+    #         f"""
+    #         <div style="{container_style}">
+    #             <h1 style='font-size: 5em; text-align: center; color: black;'>SANIKA </h1>
+    #         </div>
+    #         """,
+    #         unsafe_allow_html=True
+    #     )
+
+    # with col2:
+    #     container_style = """
+    #     border-radius: 3px;
+    #     padding: 10px;
+    #     background-color: beige;
+    #     box-shadow: 2px 2px 5px grey;
+    #     height: 400px;
+    #     width: 500px;
+    #     """
+    #     st.markdown(
+    #         f"""
+    #         <div style="{container_style}">
+    #             <h1 style='font-size: 5em; text-align: center; color: black;'> IS </h1>
+    #         </div>
+    #         """,
+    #         unsafe_allow_html=True
+    #     )
+
+    # with col3:
+    #     container_style = """
+    #     border-radius: 3px;
+    #     padding: 10px;
+    #     background-color: beige;
+    #     box-shadow: 2px 2px 5px grey;
+    #     height: 400px;
+    #     width: 500px;
+    #     """
+    #     st.markdown(
+    #         f"""
+    #         <div style="{container_style}">
+    #             <h1 style='font-size: 5em; text-align: center; color: black;'> BEAUTIFUL </h1>
+    #         </div>
+    #         """,
+    #         unsafe_allow_html=True
+    #     )
 
 
 
