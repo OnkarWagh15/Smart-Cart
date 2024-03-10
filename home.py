@@ -1,11 +1,13 @@
+import os
 import ssl
+import math
 import requests
+import subprocess
+import numpy as np
 import pandas as pd
 import streamlit as st
 from urllib import request
 from bs4 import BeautifulSoup
-import pandas as pd
-import numpy as np
 
 st.set_page_config(
     page_title="Smart Cart | All at One Place",
@@ -13,7 +15,6 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
-
 
 dfPrimary = pd.DataFrame()
 specsList = []
@@ -340,7 +341,7 @@ def crawlAlibaba(Alibaba):
             if linkcontent:
                 href = linkcontent.get('href')  
                 if href:
-                    specificLink = "https:" + href + "+india.html"
+                    specificLink = href + "+india.html"
             else:
                 links.append('NA')
 
@@ -412,7 +413,9 @@ def urlFormation(product, specsList):
     alibaba = alibaba + "+india.html"
     crawlAlibaba(alibaba)
 
-    # return amazon
+    col1,col2,col3 = st.columns([1,10,1])
+    with col2:
+        print_analysis_to_screen()
 
 def crawling():
     st.markdown("<h1 style='font-size: 7em; text-align: center; color:lightblue'>SMART CART</h1>", unsafe_allow_html=True)
@@ -434,7 +437,7 @@ def crawling():
     for _ in range(7):
         st.write("")
     
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3 = st.columns([1,4,1])
     with col2:
         st.markdown("<h5 style='font-size:1.5em; text-align: center; color:lightblue'>ENTER PRODUCT DETAILS:</h5>", unsafe_allow_html=True)
         # st.write("ENTER PRODUCT DETAILS:")
@@ -445,68 +448,10 @@ def crawling():
 
         global specsList
         specs = specs.replace(": ", "" ).replace(" ", "+").replace("\t", "+").replace("\n", "+")
-        specsList = specs.split(";")
-
+        specsList = specs.split(":")
+        
         if st.button("Search", type = "primary"):
             urlFormation(product, specsList)
-            print_analysis_to_screen()
-
-    # col1, col2, col3 = st.columns(3)
-    # with col1:
-    #     container_style = """
-    #     border-radius: 3px;
-    #     padding: 10px;
-    #     background-color: beige;
-    #     box-shadow: 2px 2px 5px grey;
-    #     height: 400px;
-    #     width: 500px;
-    #     """
-    #     st.markdown(
-    #         f"""
-    #         <div style="{container_style}">
-    #             <h1 style='font-size: 5em; text-align: center; color: black;'>SANIKA </h1>
-    #         </div>
-    #         """,
-    #         unsafe_allow_html=True
-    #     )
-
-    # with col2:
-    #     container_style = """
-    #     border-radius: 3px;
-    #     padding: 10px;
-    #     background-color: beige;
-    #     box-shadow: 2px 2px 5px grey;
-    #     height: 400px;
-    #     width: 500px;
-    #     """
-    #     st.markdown(
-    #         f"""
-    #         <div style="{container_style}">
-    #             <h1 style='font-size: 5em; text-align: center; color: black;'> IS </h1>
-    #         </div>
-    #         """,
-    #         unsafe_allow_html=True
-    #     )
-
-    # with col3:
-    #     container_style = """
-    #     border-radius: 3px;
-    #     padding: 10px;
-    #     background-color: beige;
-    #     box-shadow: 2px 2px 5px grey;
-    #     height: 400px;
-    #     width: 500px;
-    #     """
-    #     st.markdown(
-    #         f"""
-    #         <div style="{container_style}">
-    #             <h1 style='font-size: 5em; text-align: center; color: black;'> BEAUTIFUL </h1>
-    #         </div>
-    #         """,
-    #         unsafe_allow_html=True
-    #     )
-
-
 
 def dollar_to_ruppee(dollar):
     url = 'https://open.er-api.com/v6/latest/USD'
@@ -533,12 +478,13 @@ def clean_price(price):
         return price
 
 def analysis():
+    global dfPrimary
     df = dfPrimary
-
     global specsList
     specsList = [spec.replace('+', ' ') for spec in specsList]
 
     # Data Cleaning and Preprocessing
+    print(df)
     df = df.dropna(subset=['Price'])
     df.loc[:, 'Price'] = df['Price'].apply(clean_price)
     df.loc[:, 'Ratings'] = pd.to_numeric(df['Ratings'], errors = 'coerce')
@@ -559,30 +505,53 @@ def analysis():
     df.drop('_lowercase_name', axis=1, inplace=True)
 
     total_records = df.Name.count()
+    
     quartile = round((75/100)* total_records)
 
     df_sorted = df.sort_values(by=['Price', 'Ratings', 'Time'], ascending=[True, False, True])
 
     return df_sorted[:quartile]
 
+
 def print_analysis_to_screen():
     if specsList:  # Check if specsList is not empty
         df = analysis()
-        st.title('Best Products')
+        st.markdown("<h5 style='font-size:1.5em; text-align: center; color:lightblue'>BEST PRODUCTS:</h5>", unsafe_allow_html=True)
 
-        df['Ratings'] = df['Ratings'].apply(lambda x: '⭐' * int(x))
+        df['Ratings'] = df['Ratings'].apply(lambda x: '⭐' * math.ceil(x))
         df['Price'] = '₹ ' + df['Price'].astype(str)
 
-        st.dataframe(
-            df,
-            column_config={
-                "Name": "Product Name",
-                "Link": st.column_config.LinkColumn("Product URL")
-            },
-            height = 375,
-            hide_index=True,
-        )
+        st.markdown("""
+            <style>
+                table {
+                    font-family: Arial, sans-serif;
+                    border-collapse: collapse;
+                    text-align : center;                    
+                }
+                
+                th, td {
+                    border: 1.5px solid #f50707;  
+                    margin-bottom: 3px;
+                    text-align: left;
+                    padding: 40px;            
+                }
+                
+                th {
+                    background-color: #4db3f7;  
+                    opacity: 0.8;
+                }
+                                
+                .link-text {
+                    color: #0000EE;
+                    text-decoration: underline;
+                    cursor: pointer;
+                }
+
+            </style>
+        """, unsafe_allow_html=True)
+        df['Link'] = df['Link'].apply(lambda x: f'<a href="{x}">Open link</a>')
+
+        # Display DataFrame as HTML
+        st.write(df.to_html(escape=False), unsafe_allow_html=True)
 
 crawling()
-
-
