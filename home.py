@@ -24,8 +24,9 @@ def writeToExcel(df):
     dfPrimary = pd.concat([dfPrimary, df], ignore_index=True, axis=0)
     dfPrimary.to_csv("ProductDetails.csv", index=False)
        
-def CrawlAmazon(amazon):
+def CrawlAmazon(amazon, tries):
 
+    
     header = ({'User-Agent':
             'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36',
             'Accept-Language': 'en-US, en;q=0.5'})
@@ -129,7 +130,10 @@ def CrawlAmazon(amazon):
     
     # print(df)
     if df.empty:
-        CrawlAmazon(amazon)
+        if tries == 20:
+            return
+        else:
+            CrawlAmazon(amazon, tries + 1 )
     writeToExcel(df)
     print("Data found from Amazon")
     
@@ -407,7 +411,7 @@ def urlFormation(product, specsList):
         alibaba += '+' + i
         flipkart += '+' + i
 
-    CrawlAmazon(amazon)
+    CrawlAmazon(amazon,0)
     crawlFlipkart(flipkart)
     crawlSnapdeal(snapdeal)
     alibaba = alibaba + "+india.html"
@@ -484,7 +488,7 @@ def analysis():
     specsList = [spec.replace('+', ' ') for spec in specsList]
 
     # Data Cleaning and Preprocessing
-    print(df)
+    # print(df)
     df = df.dropna(subset=['Price'])
     df.loc[:, 'Price'] = df['Price'].apply(clean_price)
     df.loc[:, 'Ratings'] = pd.to_numeric(df['Ratings'], errors = 'coerce')
