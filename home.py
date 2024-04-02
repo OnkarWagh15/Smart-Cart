@@ -32,7 +32,7 @@ def CrawlAmazon(amazon, tries):
             'Accept-Language': 'en-US, en;q=0.5'})
     
     web = requests.get(amazon, headers= header)
-    # print(amazon)
+    print(amazon)
     print(web)
     soup =  BeautifulSoup(web.content, 'lxml')
 
@@ -261,6 +261,7 @@ def crawlSnapdeal(snapdeal):
     
     web = requests.get(snapdeal, headers= header)
     print(snapdeal)
+    print(web)
     soup =  BeautifulSoup(web.content, 'lxml')
 
     names = []
@@ -329,6 +330,7 @@ def crawlAlibaba(Alibaba):
    
     web = requests.get(Alibaba, headers= header)
     print(Alibaba)
+    print(web)
     soup =  BeautifulSoup(web.content,"html.parser")
 
     names = []
